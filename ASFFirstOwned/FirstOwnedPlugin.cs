@@ -95,7 +95,7 @@ internal sealed class FirstOwnedPlugin : IBotCommand2 {
 	}
 
 	[MethodImpl(MethodImplOptions.NoInlining)]
-	private static string Render(List<Bot> bots, uint appID, string name) {
+	private static string Render(List<Bot> bots, List<(uint AppID, string Name)> candidates) {
 		StringBuilder sb = new();
 
 		foreach (Bot b in bots) {
@@ -103,7 +103,50 @@ internal sealed class FirstOwnedPlugin : IBotCommand2 {
 				sb.Append('\n');
 			}
 
-			sb.Append(b.IsConnectedAndLoggedOn ? FirstOwnedFinder.Format(b, name, FirstOwnedFinder.Find(b, appID)) : "<" + b.BotName + "> not connected.");
+			if (!b.IsConnectedAndLoggedOn) {
+				sb.Append("<" + b.BotName + "> not connected.");
+
+				continue;
+			}
+
+			// A single candidate is an exact appID (or a one-result search): keep the simple output
+			if (candidates.Count == 1) {
+				sb.Append(FirstOwnedFinder.Format(b, candidates[0].Name, FirstOwnedFinder.Find(b, candidates[0].AppID)));
+
+				continue;
+			}
+
+			// Several candidates: this was a name search, so show the ones this account actually owns
+			List<(uint AppID, string Name, OwnedResult Result)> owned = new();
+
+			foreach ((uint appID, string name) in candidates) {
+				OwnedResult? result = FirstOwnedFinder.Find(b, appID);
+
+				if (result != null) {
+					owned.Add((appID, name, result));
+				}
+			}
+
+			if (owned.Count == 0) {
+				sb.Append("<" + b.BotName + "> none of the closest store matches are owned. Closest: ");
+
+				for (int i = 0; (i < candidates.Count) && (i < 5); i++) {
+					if (i > 0) {
+						sb.Append(", ");
+					}
+
+					sb.Append(candidates[i].Name + " (" + candidates[i].AppID + ")");
+				}
+
+				continue;
+			}
+
+			sb.Append(FirstOwnedFinder.Format(b, owned[0].Name, owned[0].Result));
+
+			for (int i = 1; (i < owned.Count) && (i < 5); i++) {
+				sb.Append('\n');
+				sb.Append("  also matches: " + FirstOwnedFinder.FormatShort(owned[i].Name, owned[i].AppID, owned[i].Result));
+			}
 		}
 
 		return sb.ToString();
@@ -120,12 +163,12 @@ internal sealed class FirstOwnedPlugin : IBotCommand2 {
 			return plan.Error;
 		}
 
-		(uint AppID, string Name)? resolved = await AppResolver.Resolve(plan.Game).ConfigureAwait(false);
+		List<(uint AppID, string Name)> candidates = await AppResolver.Resolve(plan.Game).ConfigureAwait(false);
 
-		if (resolved == null) {
-			return "Could not resolve that game. Use an appID (e.g. 1422450) or a store name.";
+		if (candidates.Count == 0) {
+			return "No store match for that. Use an appID (e.g. 1422450) or part of the game's name.";
 		}
 
-		return Render(plan.Bots, resolved.Value.AppID, resolved.Value.Name);
+		return Render(plan.Bots, candidates);
 	}
 }

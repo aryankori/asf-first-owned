@@ -22,7 +22,16 @@ Example:
 ```
 
 - If several packages grant the same game, the earliest one is shown.
-- Game names are resolved with the Steam store search (first result). Use the appID when the name is ambiguous.
+- **Partial names work.** Don't remember the full title? Type part of it. The plugin searches the Steam store, keeps only the matches your account owns, and lists them (best match first, up to 5):
+
+  ```
+  !firstowned dead
+  <mybot> Dead by Daylight: first owned 2020-09-10 06:21:57 UTC via Complimentary (package 497846, ...)
+    also matches: Left 4 Dead 2 (550): first owned 2020-11-26 10:05:45 UTC via Wallet
+    also matches: Deadlock (1422450): first owned 2024-06-01 15:05:13 UTC via ActivationCode
+  ```
+
+  If none of the closest store matches are owned, it says so and lists what it found, so you can retry with a better word or an appID.
 - When you give an appID, the output shows the app's name too (games, DLC, demos). If the store has no public listing for it, it shows `app <id>` instead.
 - Requires `Operator` access or higher. Querying other bots requires `Master`.
 - Times are UTC.

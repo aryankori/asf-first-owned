@@ -42,6 +42,12 @@ internal static class FirstOwnedFinder {
 		return new OwnedResult(appID, first, matches.Count);
 	}
 
+	internal static string FormatShort(string name, uint appID, OwnedResult result) {
+		DateTime utc = DateTime.SpecifyKind(result.First.TimeCreated, DateTimeKind.Utc);
+
+		return name + " (" + appID.ToString(CultureInfo.InvariantCulture) + "): first owned " + utc.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) + " UTC via " + result.First.PaymentMethod;
+	}
+
 	internal static string Format(Bot bot, string gameLabel, OwnedResult? result) {
 		if (result == null) {
 			return $"<{bot.BotName}> {gameLabel}: not owned, or package data not loaded yet (try again after ASF has synced).";
