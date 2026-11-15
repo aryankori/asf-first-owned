@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<OutputType>Library</OutputType>
+		<AssemblyName>ASFFirstOwned</AssemblyName>
+		<RootNamespace>ArchiSteamFarm.CustomPlugins.FirstOwned</RootNamespace>
+		<Version>1.0.0.0</Version>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>disable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Versions match ArchiSteamFarm 6.3.11.7 (see ArchiSteamFarm/Directory.Packages.props) -->
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" IncludeAssets="compile" />
+		<PackageReference Include="SteamKit2" Version="3.5.0" IncludeAssets="compile" />
+		<PackageReference Include="System.Composition.AttributedModel" Version="10.0.14" IncludeAssets="compile" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ArchiSteamFarm\ArchiSteamFarm\ArchiSteamFarm.csproj" ExcludeAssets="all" Private="false" />
+	</ItemGroup>
+</Project>
