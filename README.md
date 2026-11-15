@@ -15,7 +15,7 @@ Example:
 
 ```
 !firstowned 1422450
-<mybot> app 1422450: first owned 2024-06-01 15:05:13 UTC via ActivationCode (package 499466)
+<mybot> Deadlock: first owned 2024-06-01 15:05:13 UTC via ActivationCode (package 499466)
 
 !firstowned Deadlock
 <mybot> Deadlock: first owned 2024-06-01 15:05:13 UTC via ActivationCode (package 499466)
@@ -23,6 +23,7 @@ Example:
 
 - If several packages grant the same game, the earliest one is shown.
 - Game names are resolved with the Steam store search (first result). Use the appID when the name is ambiguous.
+- When you give an appID, the output shows the app's name too (games, DLC, demos). If the store has no public listing for it, it shows `app <id>` instead.
 - Requires `Operator` access or higher. Querying other bots requires `Master`.
 - Times are UTC.
 

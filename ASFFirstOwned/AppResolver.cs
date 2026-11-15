@@ -23,7 +23,7 @@ internal static class AppResolver {
 		}
 
 		if (uint.TryParse(query, out uint appID) && (appID > 0)) {
-			return (appID, "app " + appID);
+			return (appID, await GetName(appID).ConfigureAwait(false));
 		}
 
 		if (ASF.WebBrowser == null) {
@@ -39,6 +39,47 @@ internal static class AppResolver {
 		}
 
 		return (items[0].ID, items[0].Name);
+	}
+
+	// Works for games, DLC, demos and other apps. Falls back to "app <id>" when the store has no public listing (delisted, region locked, etc).
+	private static async Task<string> GetName(uint appID) {
+		string fallback = "app " + appID;
+
+		if (ASF.WebBrowser == null) {
+			return fallback;
+		}
+
+		try {
+			Uri url = new("https://store.steampowered.com/api/appdetails?filters=basic&l=english&appids=" + appID);
+
+			ObjectResponse<Dictionary<string, AppDetailsEntry>>? response = await ASF.WebBrowser.UrlGetToJsonObject<Dictionary<string, AppDetailsEntry>>(url).ConfigureAwait(false);
+
+			if ((response?.Content != null) && response.Content.TryGetValue(appID.ToString(), out AppDetailsEntry? entry) && entry.Success && !string.IsNullOrEmpty(entry.Data?.Name)) {
+				return entry.Data.Name;
+			}
+		} catch (Exception) {
+			// The name is cosmetic, never fail the command because of it
+		}
+
+		return fallback;
+	}
+
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Created by the JSON deserializer")]
+	private sealed class AppDetailsEntry {
+		[JsonInclude]
+		[JsonPropertyName("success")]
+		public bool Success { get; private init; }
+
+		[JsonInclude]
+		[JsonPropertyName("data")]
+		public AppDetailsData? Data { get; private init; }
+	}
+
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Created by the JSON deserializer")]
+	private sealed class AppDetailsData {
+		[JsonInclude]
+		[JsonPropertyName("name")]
+		public string Name { get; private init; } = string.Empty;
 	}
 
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Created by the JSON deserializer")]
